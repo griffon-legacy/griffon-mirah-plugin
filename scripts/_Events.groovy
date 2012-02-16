@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Copyright 2011-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@
  * @author Andres Almiray
  */
 
-includeTargets << griffonScript('Init')
 includePluginScript('mirah', '_MirahCommon')
 
 eventCompileStart = { 
@@ -27,10 +26,10 @@ eventCompileStart = {
 }
  
 eventStatsStart = { pathToInfo ->
-    if(!pathToInfo.find{ it.path == "src.commons"} ) {
-        pathToInfo << [name: "Common Sources", path: "src.commons", filetype: [".groovy",".java"]]
+    if(!pathToInfo.find{ it.path == 'src.commons'} ) {
+        pathToInfo << [name: 'Common Sources', path: 'src.commons', filetype: ['.groovy','.java']]
     }
-    if(!pathToInfo.find{ it.path == "src.mirah"} ) {
-        pathToInfo << [name: "Mirah Sources", path: "src.mirah", filetype: [".mirah"]]
+    if(!pathToInfo.find{ it.path == 'src.mirah'} ) {
+        pathToInfo << [name: 'Mirah Sources', path: 'src.mirah', filetype: ['.mirah']]
     }
 }

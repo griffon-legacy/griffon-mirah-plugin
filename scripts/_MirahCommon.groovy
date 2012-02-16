@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Copyright 2011-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0(the "License");
  * you may not use this file except in compliance with the License.
@@ -18,16 +18,13 @@
  * @author Andres Almiray
  */
 
-import org.codehaus.groovy.runtime.StackTraceUtils
+import griffon.util.GriffonExceptionHandler
 // import org.mirah.MirahCommand
 
-includeTargets << griffonScript('_GriffonArgParsing')
+includePluginScript('lang-bridge', '_Commons')
 
 target(name: 'compileMirahSrc', description: "", prehook: null, posthook: null) {
-    depends(parseArguments)
-
-    includePluginScript('lang-bridge', 'CompileCommons')
-    compileCommons()
+    depends(parseArguments, compileCommons)
 
     File mirahSrc = new File("${basedir}/src/mirah")
     ant.mkdir(dir: mirahSrc)
@@ -44,7 +41,7 @@ target(name: 'compileMirahSrc', description: "", prehook: null, posthook: null) 
     classpathId = 'mirah.compile.classpath'
     if(argsMap.compileTrace) {
         println('-'*80)
-        println "[GRIFFON] compiling to ${classesDirPath}"
+        println "[GRIFFON] compiling to ${projectMainClassesDir}"
         println "[GRIFFON] '${classpathId}' entries"
         ant.project.getReference(classpathId).list().each{println("  $it")}
         println('-'*80)
@@ -52,7 +49,7 @@ target(name: 'compileMirahSrc', description: "", prehook: null, posthook: null) 
 
     try {
         def compileMirah = { srcdir, sources ->
-            if(sourcesUpToDate(srcdir, classesDirPath, '.mirah')) return
+            if(sourcesUpToDate(srcdir, projectMainClassesDir, '.mirah')) return
             
             sources = sources.collect { file -> 
                 file -= srcdir
@@ -63,7 +60,7 @@ target(name: 'compileMirahSrc', description: "", prehook: null, posthook: null) 
             ant.java(classpathref: classpathId, classname: 'org.mirah.MirahCommand') {
                 arg(value: 'compile')
                 arg(value: '-d')
-                arg(value: classesDirPath)
+                arg(value: projectMainClassesDir)
                 arg(value: '-c')
                 arg(value: ant.project.getReference(classpathId).list().join(File.pathSeparator))
                 arg(value: '--cd')
@@ -71,7 +68,7 @@ target(name: 'compileMirahSrc', description: "", prehook: null, posthook: null) 
                 sources.each { arg(value: it) }
             }
             /*
-            List cargs = ['-d', classesDirPath, '-c']
+            List cargs = ['-d', projectMainClassesDir, '-c']
             cargs << ant.project.getReference(classpathId).list().join(File.pathSeparator)
             cargs << '--cd'
             cargs << srcdir
@@ -89,8 +86,8 @@ target(name: 'compileMirahSrc', description: "", prehook: null, posthook: null) 
                 compileMirah(dir.absolutePath, sources.file.absolutePath)
         }
     } catch(Exception e) {
-        if(argsMap.verboseCompile) {
-            StackTraceUtils.deepSanitize(e)
+        if(argsMap.compileTrace) {
+            GriffonExceptionHandler.sanitize(e)
             e.printStackTrace(System.err)
         }
         event('StatusFinal', ["Compilation error: ${e.message}"])
@@ -101,7 +98,7 @@ target(name: 'compileMirahSrc', description: "", prehook: null, posthook: null) 
 target(name: 'defineMirahCompilePathAndTask', description: "", prehook: null, posthook: null) {
     ant.path(id: 'mirah.compile.classpath') {
         path(refid: 'griffon.compile.classpath')
-        pathElement(location: classesDirPath)
+        pathElement(location: projectMainClassesDir)
         griffonSettings.buildDependencies.each { jar ->
             pathElement(location: jar.absolutePath)
         }
