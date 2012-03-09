@@ -24,7 +24,7 @@ import griffon.util.GriffonExceptionHandler
 includePluginScript('lang-bridge', '_Commons')
 
 target(name: 'compileMirahSrc', description: "", prehook: null, posthook: null) {
-    depends(parseArguments, compileCommons)
+    depends(compileCommons)
 
     File mirahSrc = new File("${basedir}/src/mirah")
     ant.mkdir(dir: mirahSrc)
